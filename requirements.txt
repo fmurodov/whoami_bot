@@ -1,4 +1,0 @@
-aiogram
-asyncio
-pip
-python-dotenv

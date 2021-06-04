@@ -13,7 +13,7 @@ func main() {
 	var botToken string = os.Getenv("BOT_TOKEN")
 	var text string
 	if len(botToken) == 0 {
-		log.Fatal("Port is not set")
+		log.Fatal("BOT_TOKEN is missing")
 	}
 
 	log.Println("Starting bot...")

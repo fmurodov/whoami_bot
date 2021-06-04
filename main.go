@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"net"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -9,11 +11,14 @@ import (
 )
 
 func main() {
-
-	var botToken string = os.Getenv("BOT_TOKEN")
 	var text string
+	botToken := os.Getenv("BOT_TOKEN")
 	if len(botToken) == 0 {
 		log.Fatal("BOT_TOKEN is missing")
+	}
+	port := os.Getenv("PORT")
+	if len(port) == 0 {
+		log.Fatal("Port is not set")
 	}
 
 	log.Println("Starting bot...")
@@ -26,10 +31,20 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	_, err = bot.SetWebhook(tgbotapi.NewWebhook("https://whoamirobot.herokuapp.com/" + bot.Token))
+	if err != nil {
+		log.Fatal(err)
+	}
+	info, err := bot.GetWebhookInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if info.LastErrorDate != 0 {
+		log.Printf("Telegram callback failed: %s", info.LastErrorMessage)
+	}
 
-	updates, err := bot.GetUpdatesChan(u)
+	updates := bot.ListenForWebhook("/" + bot.Token)
+	go http.ListenAndServe(net.JoinHostPort("", port), nil)
 
 	for update := range updates {
 		if update.Message == nil { // ignore any non-Message Updates
